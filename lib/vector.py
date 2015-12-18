@@ -14,6 +14,8 @@ class PVect:
 		return PVect(self.x/other, self.y/other)
 	def __str__(self):
 		return str(self.x) + " " + str(self.y)
+	def cross(self, other):
+		return self.x*other.y - self.y*other.x
 	def mag(self):
 		return math.sqrt(self.x*self.x + self.y*self.y)
 	def normalize(self):
@@ -21,3 +23,8 @@ class PVect:
 		if(magnitude != 0):
 			self.x /= magnitude
 			self.y /= magnitude
+		else:
+			self.x = 0
+			self.y = 0
+	def heading(self):
+		return math.atan2(self.x, self.y)

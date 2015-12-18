@@ -9,22 +9,35 @@ class Point:
 		self.velocity = velocity
 		self.acceleration = acceleration
 		self.mass = mass
+		self.angle = 0.0
+		self.aVelocity = 0.0
+		self.aAcceleration = 0.0
+
 	def __str__(self):
 		return "[" + str(self.location) + " " + str(self.velocity) + " " + str(self.acceleration) + "]"
+
 	def step(self, time):
 		self.velocity += self.acceleration
 		self.location += self.velocity*time
+		self.aVelocity += self.aAcceleration
+		self.angle += self.aVelocity*time
+		#reset acceleration for recomputing forces
 		self.acceleration *= 0
+		self.aAcceleration = 0
+
 	def applyForce(self, force):
 		self.acceleration += force/self.mass
+
 	def applyGravity(self, acceleration):
 		self.acceleration += acceleration
+
 	def applyFriction(self, normal, coefficient):
 		friction = copy.deepcopy(self.velocity)
 		friction.normalize() 
 		friction *= -1
 		friction *= coefficient*normal
 		self.applyForce(friction)
+
 	def applyDrag(self, density=.1):
 		dragMag = density*(self.velocity.mag()**2)
 		drag = copy.deepcopy(self.velocity)
@@ -32,14 +45,28 @@ class Point:
 		drag.normalize()
 		drag *= dragMag
 		self.applyForce(drag)
+
 	def getForce(self):
 		return self.mass * self.acceleration
+
+	def getVolocityBearing(self):
+		return self.velocity.heading()
+
 	@staticmethod
 	def applyGravitationalAttraction(A, B, G=1):
-		forceMag = A.mass*B.mass*G/(self.vecBetween(A, B).mag()**2)
-		forceVec = self.vecBetween(A, B).normalize()
-		A.applyForce(forceVec*forceMag)
-		B.applyForce(forceVec*(-1)*forceMag)
+		distance = float((A.location - B.location).mag())
+		forceMag = float(A.mass)*float(B.mass)*G/(distance)
+		forceVecAB = (A.location - B.location)
+		forceVecBA = (B.location - A.location)
+
+		forceVecAB.normalize()
+		forceVecBA.normalize()
+
+		aforce = forceVecBA*float(forceMag)
+		bforce = forceVecAB*float(forceMag)
+		A.applyForce(aforce)
+		B.applyForce(bforce)
+
 	@staticmethod
 	def vecBetween(A, B):
 		return A.location - B.location
